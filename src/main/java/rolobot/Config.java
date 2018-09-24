@@ -4,7 +4,7 @@ public final class Config {
     private Config() {}
 
     public static final boolean RESET_LUT = false;
-    public static final boolean SAVE_LUT = true;
+    public static final boolean SAVE_LUT = false;
 
     public static final boolean TRAIN_NET = false;
     public static final boolean RESET_NET = true;
@@ -28,7 +28,7 @@ public final class Config {
     public static final int NUM_ENEMY_Y_STATES = 4;
     public static final int ACTIONS = 5;
 
-    public static final int TESTING_ROUNDS = 10;
-    public static final int TRAINING_ROUNDS = 90;
-    public static final int CYCLES = 20;
+    public static final int TESTING_ROUNDS = 5;
+    public static final int TRAINING_ROUNDS = 5;
+    public static final int CYCLES = 1;
 }

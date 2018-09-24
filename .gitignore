@@ -1,6 +1,7 @@
 .idea
 config
 robots
+lib
 target
 *.iml
 src/main/java/assign1_test

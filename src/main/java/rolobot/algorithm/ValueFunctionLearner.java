@@ -1,14 +1,15 @@
 package rolobot.algorithm;
 
+import Jama.Matrix;
 import java.io.File;
 import java.io.IOException;
 
-public interface ValueFunctionLearner<T> {
-    public double outputFor(T actionState);
+public interface ValueFunctionLearner {
+    double outputFor(Matrix trainingVector);
 
-    public double train(T actionState, double value);
+    double train(Matrix trainingVector, double targetValue);
 
-    public void load(File file) throws IOException;
+    void load(File file) throws IOException;
 
-    public void save(File file);
+    void save(File file);
 }

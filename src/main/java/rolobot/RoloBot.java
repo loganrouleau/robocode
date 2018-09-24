@@ -72,9 +72,10 @@ public class RoloBot extends AdvancedRobot {
 
         // Some things can only be done inside run()
         if (round == 0) {
-            LUTpath = getDataFile("lookupTable.dat");
-            Infopath = getDataFile("Info.dat");
-            neuralNet = new NeuralNetwork(getDataFile("NeuralNet.dat"));
+            LUTpath = getDataFile("lookup-table.dat");
+            Infopath = getDataFile("info.dat");
+            neuralNet = new NeuralNetwork();
+            neuralNet.neuralNetFile = getDataFile("neural-network.dat");
         }
         lookupTable = readLUT();
 
@@ -135,8 +136,8 @@ public class RoloBot extends AdvancedRobot {
         for (ActionState.Action possibleAction : ActionState.Action.values()) {
             actionState.setAction(possibleAction);
             if (TRAIN_NET) {
-                if (neuralNet.outputFor(actionState) > Qmax) {
-                    Qmax = neuralNet.outputFor(actionState);
+                if (neuralNet.outputFor(actionState.asMatrix()) > Qmax) {
+                    Qmax = neuralNet.outputFor(actionState.asMatrix());
                     action = possibleAction;
                 }
             } else {
@@ -159,9 +160,9 @@ public class RoloBot extends AdvancedRobot {
         // Update lookupTable or neural net if a reward was received since previous action
         if (rewardReceived) {
             if (TRAIN_NET) {
-                double qprev = neuralNet.outputFor(prevActionState);
+                double qprev = neuralNet.outputFor(prevActionState.asMatrix());
                 qprev += ALPHA * (reward + GAMMA * Qmax - qprev);
-                neuralNet.train(prevActionState, qprev);
+                neuralNet.train(prevActionState.asMatrix(), qprev);
             } else {
                 double prevValue = lookupTable.get(prevActionState);
                 lookupTable.put(prevActionState, prevValue += ALPHA * (reward + GAMMA * Qmax - prevValue));
@@ -299,7 +300,8 @@ public class RoloBot extends AdvancedRobot {
             writeLUT();
         }
         if (SAVE_NET) {
-            neuralNet.save(neuralNet.NeuralNetpath);
+            neuralNet.initializeWeights(15);
+            neuralNet.save(neuralNet.neuralNetFile);
         }
         writeInfo();
     }

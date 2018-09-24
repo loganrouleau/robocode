@@ -1,5 +1,6 @@
 package rolobot.model;
 
+import Jama.Matrix;
 import robocode.Robot;
 import robocode.ScannedRobotEvent;
 
@@ -94,6 +95,10 @@ public class ActionState {
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public Matrix asMatrix() {
+        return new Matrix(new double[][]{{x, y, enemyX, enemyY, 1}});
     }
 
     @Override
