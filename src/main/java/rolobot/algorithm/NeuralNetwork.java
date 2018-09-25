@@ -17,11 +17,11 @@ import robocode.RobocodeFileOutputStream;
 public class NeuralNetwork implements ValueFunctionLearner {
     public File neuralNetFile;
 
-    private static final int INPUT_NODES = 4;
-    private static final int HIDDEN_NODES = 5;
+    private static final int INPUT_NODES = 2;
+    private static final int HIDDEN_NODES = 4;
 
     private Matrix v = new Matrix(INPUT_NODES, HIDDEN_NODES);
-    private Matrix v0 = new Matrix(INPUT_NODES, 1);
+    private Matrix v0 = new Matrix(1, HIDDEN_NODES);
     private Matrix w = new Matrix(HIDDEN_NODES, 1);
     private double w0;
 
@@ -42,17 +42,25 @@ public class NeuralNetwork implements ValueFunctionLearner {
 
         // Backpropagation of error
         double y_error = (t - y) * activationFunctionDerivative(y_in);
-        Matrix z_error = w.timesEquals(y_error).arrayTimes(activationFunctionDerivative(z_in));
+        Matrix z_error = w.transpose().timesEquals(y_error).arrayTimes(activationFunctionDerivative(z_in));
 
         double w0_correction = ALPHA_NET * y_error;
-        Matrix w_correction = z.timesEquals(w0_correction);
+        Matrix w_correction = z.timesEquals(w0_correction).transpose();
 
         Matrix v0_correction = z_error.timesEquals(ALPHA_NET);
-        Matrix v_correction = v0_correction.times(x);
+        //Matrix v_correction = x.transpose().times(v0_correction);
+        Matrix v_correction = new Matrix(INPUT_NODES, HIDDEN_NODES);
+        for (int i = 0; i < INPUT_NODES; i++) {
+            for (int j = 0; j < HIDDEN_NODES; j++) {
+                v_correction.set(i, j, v0_correction.get(0, j) * x.get(0, i));
+            }
+        }
 
         // Update weights and biases
         w.plusEquals(w_correction);
+        w0 += w0_correction;
         v.plusEquals(v_correction);
+        v0.plusEquals(v0_correction);
 
         return y_error;
     }
@@ -87,14 +95,12 @@ public class NeuralNetwork implements ValueFunctionLearner {
      */
     public void initializeWeights(double bound) {
         Random random = new Random();
-        for (int i = 0; i < INPUT_NODES; i++) {
-            for (int j = 0; j < HIDDEN_NODES; j++) {
-                v.set(i, j, 2 * bound * random.nextDouble() - bound);
-                if (i == 0) {
-                    w.set(j, 0, 2 * bound * random.nextDouble() - bound);
-                }
+        for (int i = 0; i < HIDDEN_NODES; i++) {
+            for (int j = 0; j < INPUT_NODES; j++) {
+                v.set(j, i, 2 * bound * random.nextDouble() - bound);
             }
-            v0.set(i, 0, 2 * bound * random.nextDouble() - bound);
+            v0.set(0, i, 2 * bound * random.nextDouble() - bound);
+            w.set(i, 0, 2 * bound * random.nextDouble() - bound);
         }
         w0 = 2 * bound * random.nextDouble() - bound;
     }
@@ -115,6 +121,9 @@ public class NeuralNetwork implements ValueFunctionLearner {
         return input;
     }
 
+    /**
+     * For the bipolar sigmoid f(x): f'(x) = f(x)[1 - f(x)].
+     */
     private double activationFunctionDerivative(double input) {
         return activationFunction(input) * (1 - activationFunction(input));
     }
